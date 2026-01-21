@@ -38,8 +38,8 @@ spec:
           while true
           do 
             TIMESTAMP_SEND=$(date '+%Y-%m-%d %H:%M:%S')
-            echo "$TIMESTAMP_SEND - Sending request to http://simple-app-v1-federated.simple-app.svc.cluster.local:80"
-            RESPONSE=$(curl -s http://simple-app-v1-federated.simple-app.svc.cluster.local:80)
+            echo "$TIMESTAMP_SEND - Sending request to http://simple-app-v1-federated-federated.simple-app.svc.cluster.local:80"
+            RESPONSE=$(curl -s http://simple-app-v1-federated-federated.simple-app.svc.cluster.local:80)
             TIMESTAMP_RESPONSE=$(date '+%Y-%m-%d %H:%M:%S')
             echo "$TIMESTAMP_RESPONSE - RESPONSE: $RESPONSE"
             sleep 0.001

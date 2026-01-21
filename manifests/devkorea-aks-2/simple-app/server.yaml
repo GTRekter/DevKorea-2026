@@ -12,10 +12,10 @@ metadata:
 apiVersion: v1
 kind: Service
 metadata:
-  name: simple-app
+  name: simple-app-v1-federated
   namespace: simple-app
   mode: federated
-  annotations:
+  labels:
     mirror.linkerd.io/federated: member
 spec:
   selector:
@@ -63,7 +63,7 @@ metadata:
   name: simple-app-v1-mirrored
   namespace: simple-app
   mode: mirrored
-  annotations:
+  labels:
     mirror.linkerd.io/exported: remote-discovery
 spec:
   selector:
@@ -111,7 +111,7 @@ metadata:
   name: simple-app-v1-gateway
   namespace: simple-app
   mode: gateway
-  annotations:
+  labels:
     mirror.linkerd.io/exported: "true"
 spec:
   selector:
