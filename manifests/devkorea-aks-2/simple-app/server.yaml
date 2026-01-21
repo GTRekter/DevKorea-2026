@@ -112,7 +112,7 @@ metadata:
   namespace: simple-app
   mode: gateway
   annotations:
-    mirror.linkerd.io/exported: true
+    mirror.linkerd.io/exported: "true"
 spec:
   selector:
     app: simple-app
