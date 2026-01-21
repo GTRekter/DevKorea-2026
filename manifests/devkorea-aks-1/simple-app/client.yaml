@@ -93,22 +93,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: traffic-mirrored
+  name: traffic-gateway
   namespace: simple-app
   labels:
     app: traffic
-    mode: mirrored
+    mode: gateway
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: traffic
-      mode: mirrored
+      mode: gateway
   template:
     metadata:
       labels:
         app: traffic
-        mode: mirrored
+        mode: gateway
     spec:
       containers:
       - name: traffic
