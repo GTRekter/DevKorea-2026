@@ -29,7 +29,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: simple-app
+  name: simple-app-v1-federated
   namespace: simple-app
 spec:
   replicas: 1
@@ -77,7 +77,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: simple-app
+  name: simple-app-v1-mirrored
   namespace: simple-app
 spec:
   replicas: 1
@@ -125,7 +125,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: simple-app
+  name: simple-app-v1-gateway
   namespace: simple-app
 spec:
   replicas: 1
