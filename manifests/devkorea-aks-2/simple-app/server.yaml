@@ -148,3 +148,22 @@ spec:
             - "-text=Simple App v1 Gateway - devkorea-aks-2"
           ports:
             - containerPort: 5678
+---
+# ====================================================================
+# Curl Pod
+# ====================================================================
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: simple-app
+  labels:
+    app: curl
+  annotations:
+    linkerd.io/inject: disabled
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:latest
+      command: ["sleep", "infinity"]

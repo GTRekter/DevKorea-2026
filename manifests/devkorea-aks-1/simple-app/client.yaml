@@ -131,3 +131,22 @@ spec:
             echo "$TIMESTAMP_RESPONSE - RESPONSE: $RESPONSE"
             sleep 0.001
           done
+---
+# ====================================================================
+# Curl Pod
+# ====================================================================
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: simple-app
+  labels:
+    app: curl
+  annotations:
+    linkerd.io/inject: disabled
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:latest
+      command: ["sleep", "infinity"]
