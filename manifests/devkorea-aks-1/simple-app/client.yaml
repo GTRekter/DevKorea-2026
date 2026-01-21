@@ -28,6 +28,8 @@ spec:
       labels:
         app: traffic
         mode: federated
+    annotations:
+      config.linkerd.io/proxy-outbound-connect-timeout: "5s"
     spec:
       containers:
       - name: traffic
@@ -68,6 +70,8 @@ spec:
       labels:
         app: traffic
         mode: mirrored
+      annotations:
+        config.linkerd.io/proxy-outbound-connect-timeout: "5s"
     spec:
       containers:
       - name: traffic
@@ -109,6 +113,8 @@ spec:
       labels:
         app: traffic
         mode: gateway
+      annotations:
+        config.linkerd.io/proxy-outbound-connect-timeout: "5s"
     spec:
       containers:
       - name: traffic
