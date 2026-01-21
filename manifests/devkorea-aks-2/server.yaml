@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: simple-app
+  annotations:
+    linkerd.io/inject: enabled
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-app
+  namespace: simple-app
+spec:
+  selector:
+    app: simple-app
+    version: v1
+  ports:
+    - port: 80
+      targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-app
+  namespace: simple-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-app
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: simple-app
+        version: v1
+    spec:
+      containers:
+        - name: http-app
+          image: hashicorp/http-echo:latest
+          args:
+            - "-text=Simple App v1 - devkorea-aks-2"
+          ports:
+            - containerPort: 5678

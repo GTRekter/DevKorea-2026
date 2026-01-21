@@ -342,6 +342,22 @@ resource "argocd_application_set" "linkerd_enterprise_control_plane" {
               value = "buoyant-license"
             }
             parameter {
+              name  = "controllerLogLevel"
+              value = "debug"
+            }
+            parameter {
+              name  = "policyController.logLevel"
+              value = "debug"
+            }
+            parameter {
+              name  = "destinationController.logLevel"
+              value = "debug"
+            }
+            parameter {
+              name  = "proxy.logLevel"
+              value = "debug,linkerd=debug,hickory=error,linkerd_balancer=trace"
+            }            
+            parameter {
               name  = "identityTrustAnchorsPEM"
               value = chomp(tls_self_signed_cert.trust_anchor.cert_pem)
             }
@@ -411,6 +427,10 @@ resource "argocd_application" "linkerd_enterprise_multicluster" {
           name  = "gateway.enabled"
           value = "true"
         }
+        parameter {
+          name = "controllerDefaults.logLevel"
+          value = "debug"
+        }
         dynamic "parameter" {
           # Use sequential indices per cluster to avoid gaps in the controllers array
           for_each = { for idx, remote_cluster in local.other_clusters[each.key] : tostring(idx) => remote_cluster }
@@ -465,7 +485,6 @@ resource "argocd_application" "linkerd_enterprise_multicluster_credentials" {
       path = "manifests/${each.value.source}"
       directory {
         recurse = false
-        # include = "credentials-${each.value.remote}.yaml"
       }
     }
   }
