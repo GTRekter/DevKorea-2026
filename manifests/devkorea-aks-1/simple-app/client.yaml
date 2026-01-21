@@ -5,6 +5,10 @@ metadata:
   annotations:
     linkerd.io/inject: enabled
 ---
+# ====================================================================
+# Federated Mode Deployments
+# ====================================================================
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -41,6 +45,10 @@ spec:
             sleep 0.001
           done
 ---
+# ====================================================================
+# Mirrored Mode Deployments
+# ====================================================================
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -70,8 +78,49 @@ spec:
           while true
           do 
             TIMESTAMP_SEND=$(date '+%Y-%m-%d %H:%M:%S')
-            echo "$TIMESTAMP_SEND - Sending request to http://simple-app-v1-devkorea-aks-2.simple-app.svc.cluster.local:80"
-            RESPONSE=$(curl -s http://simple-app-v1-devkorea-aks-2.simple-app.svc.cluster.local:80)
+            echo "$TIMESTAMP_SEND - Sending request to http://simple-app-v1-mirrored-devkorea-aks-2.simple-app.svc.cluster.local:80"
+            RESPONSE=$(curl -s http://simple-app-v1-mirrored-devkorea-aks-2.simple-app.svc.cluster.local:80)
+            TIMESTAMP_RESPONSE=$(date '+%Y-%m-%d %H:%M:%S')
+            echo "$TIMESTAMP_RESPONSE - RESPONSE: $RESPONSE"
+            sleep 0.001
+          done
+
+---
+# ====================================================================
+# Gateway Mode Deployments
+# ====================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-mirrored
+  namespace: simple-app
+  labels:
+    app: traffic
+    mode: mirrored
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traffic
+      mode: mirrored
+  template:
+    metadata:
+      labels:
+        app: traffic
+        mode: mirrored
+    spec:
+      containers:
+      - name: traffic
+        image: curlimages/curl:latest 
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          while true
+          do 
+            TIMESTAMP_SEND=$(date '+%Y-%m-%d %H:%M:%S')
+            echo "$TIMESTAMP_SEND - Sending request to http://simple-app-v1-gateway-devkorea-aks-2.simple-app.svc.cluster.local:80"
+            RESPONSE=$(curl -s http://simple-app-v1-gateway-devkorea-aks-2.simple-app.svc.cluster.local:80)
             TIMESTAMP_RESPONSE=$(date '+%Y-%m-%d %H:%M:%S')
             echo "$TIMESTAMP_RESPONSE - RESPONSE: $RESPONSE"
             sleep 0.001

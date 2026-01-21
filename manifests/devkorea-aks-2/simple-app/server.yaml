@@ -5,15 +5,23 @@ metadata:
   annotations:
     linkerd.io/inject: enabled
 ---
+# ====================================================================
+# Federated Mode Deployments
+# ====================================================================
+
 apiVersion: v1
 kind: Service
 metadata:
   name: simple-app
   namespace: simple-app
+  mode: federated
+  annotations:
+    mirror.linkerd.io/federated: member
 spec:
   selector:
     app: simple-app
     version: v1
+    mode: federated
   ports:
     - port: 80
       targetPort: 5678
@@ -29,16 +37,114 @@ spec:
     matchLabels:
       app: simple-app
       version: v1
+      mode: federated
   template:
     metadata:
       labels:
         app: simple-app
         version: v1
+        mode: federated
     spec:
       containers:
         - name: http-app
           image: hashicorp/http-echo:latest
           args:
-            - "-text=Simple App v1 - devkorea-aks-2"
+            - "-text=Simple App v1 Federated - devkorea-aks-2"
+          ports:
+            - containerPort: 5678
+---
+# ====================================================================
+# Mirrored Mode Deployments
+# ====================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-app-v1-mirrored
+  namespace: simple-app
+  mode: mirrored
+  annotations:
+    mirror.linkerd.io/exported: remote-discovery
+spec:
+  selector:
+    app: simple-app
+    version: v1
+    mode: mirrored
+  ports:
+    - port: 80
+      targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-app
+  namespace: simple-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-app
+      version: v1
+      mode: mirrored
+  template:
+    metadata:
+      labels:
+        app: simple-app
+        version: v1
+        mode: mirrored
+    spec:
+      containers:
+        - name: http-app
+          image: hashicorp/http-echo:latest
+          args:
+            - "-text=Simple App v1 Mirrored - devkorea-aks-2"
+          ports:
+            - containerPort: 5678
+---
+# ====================================================================
+# Gateway Mode Deployments
+# ====================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: simple-app-v1-gateway
+  namespace: simple-app
+  mode: gateway
+  annotations:
+    mirror.linkerd.io/exported: true
+spec:
+  selector:
+    app: simple-app
+    version: v1
+    mode: gateway
+  ports:
+    - port: 80
+      targetPort: 5678
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-app
+  namespace: simple-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-app
+      version: v1
+      mode: gateway
+  template:
+    metadata:
+      labels:
+        app: simple-app
+        version: v1
+        mode: gateway
+    spec:
+      containers:
+        - name: http-app
+          image: hashicorp/http-echo:latest
+          args:
+            - "-text=Simple App v1 Gateway - devkorea-aks-2"
           ports:
             - containerPort: 5678
