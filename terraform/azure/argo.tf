@@ -155,7 +155,10 @@ resource "argocd_project" "linkerd_enterprise" {
   }
   spec {
     description  = "Project for Linkerd Enterprise deployments"
-    source_repos = ["https://helm.buoyant.cloud"]
+    source_repos = [
+      "https://helm.buoyant.cloud",
+      "https://github.com/GTRekter/DevKorea-2026.git",
+    ]
     destination {
       server    = azurerm_kubernetes_cluster.kubernetes_clusters["devkorea-aks-1"].kube_config[0].host
       name      = "devkorea-aks-1"
@@ -255,7 +258,7 @@ resource "kubernetes_secret_v1" "buoyant_license_aks_2" {
 # ============================================================
 
 resource "argocd_application_set" "linkerd_enterprise_crds" {
-  depends_on = [ helm_release.argocd, argocd_project.linkerd_enterprise ]
+  depends_on = [ helm_release.argocd, argocd_project.linkerd_enterprise,  argocd_project.linkerd_enterprise ]
 
   metadata {
     name      = "linkerd-enterprise-crds"
@@ -306,7 +309,7 @@ resource "argocd_application_set" "linkerd_enterprise_crds" {
 }
 
 resource "argocd_application_set" "linkerd_enterprise_control_plane" {
-  depends_on = [ helm_release.argocd, argocd_application_set.linkerd_enterprise_crds ]
+  depends_on = [ helm_release.argocd, argocd_project.linkerd_enterprise, argocd_application_set.linkerd_enterprise_crds ]
 
   metadata {
     name      = "linkerd-enterprise-control-plane"
@@ -382,7 +385,7 @@ resource "argocd_application_set" "linkerd_enterprise_control_plane" {
 
 resource "argocd_application" "linkerd_enterprise_multicluster" {
   for_each   = local.cluster_instances
-  depends_on = [helm_release.argocd,argocd_application_set.linkerd_enterprise_control_plane]
+  depends_on = [helm_release.argocd, argocd_project.linkerd_enterprise, argocd_application_set.linkerd_enterprise_control_plane]
 
   metadata {
     name      = "linkerd-enterprise-multicluster-${each.key}"
@@ -432,6 +435,37 @@ resource "argocd_application" "linkerd_enterprise_multicluster" {
           factor       = 2
           max_duration = "5m"
         }
+      }
+    }
+  }
+}
+
+resource "argocd_application" "linkerd_enterprise_multicluster_credentials" {
+  for_each = merge([
+    for source, remotes in local.other_clusters : {
+      for remote in remotes :
+      "${source}__${remote}" => { source = source, remote = remote }
+    }
+  ]...)
+  depends_on = [helm_release.argocd, argocd_project.linkerd_enterprise, argocd_application.linkerd_enterprise_multicluster]
+
+  metadata {
+    name      = "linkerd-enterprise-mc-${each.value.source}-creds-${each.value.remote}"
+    namespace = "argocd"
+  }
+  spec {
+    project = "linkerd-enterprise"
+    destination {
+      server    = azurerm_kubernetes_cluster.kubernetes_clusters[each.value.source].kube_config[0].host
+      namespace = "linkerd-multicluster"
+    }
+    source {
+      repo_url        = "https://github.com/GTRekter/DevKorea-2026.git"
+      target_revision = "HEAD"
+      path = "manifests/${each.value.source}"
+      directory {
+        recurse = false
+        # include = "credentials-${each.value.remote}.yaml"
       }
     }
   }
