@@ -63,6 +63,52 @@ Update `local.cluster_instances` in `terraform/azure/locals.tf` to add/remove cl
 ### Using the Pre-built Linkerd Credentials
 If you need to recreate the multicluster Link resources manually (outside of Terraform/Argo CD), the files in `manifests/credentials-devkorea-aks-*.yaml` contain the kubeconfig secrets and `Link` objects for `devkorea-aks-1` and `devkorea-aks-2`.
 
+### Applications
+
+```
+[devkorea-aks-1|default] gtrekter@MacBook-Pro-M4 azure % kubectl get pods,svc -n simple-app -o wide                                        
+NAME                                     READY   STATUS    RESTARTS   AGE     IP            NODE                            NOMINATED NODE   READINESS GATES
+pod/curl                                 1/1     Running   0          9s      10.240.2.25   aks-linux-33822179-vmss000000   <none>           <none>
+pod/traffic-federated-554b7b6cc5-kpglw   2/2     Running   0          14m     10.240.1.18   aks-linux-33822179-vmss000001   <none>           <none>
+pod/traffic-gateway-7968f4b4d8-tvklg     2/2     Running   0          4m36s   10.240.1.20   aks-linux-33822179-vmss000001   <none>           <none>
+pod/traffic-mirrored-557d5545d6-nbrbn    2/2     Running   0          4m36s   10.240.2.24   aks-linux-33822179-vmss000000   <none>           <none>
+
+NAME                                            TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/simple-app-v1-federated-federated       ClusterIP   10.16.92.231   <none>        80/TCP    14m   <none>
+service/simple-app-v1-gateway-devkorea-aks-2    ClusterIP   10.16.56.4     <none>        80/TCP    14m   <none>
+service/simple-app-v1-mirrored-devkorea-aks-2   ClusterIP   10.16.223.54   <none>        80/TCP    14m   <none>
+
+```
+
+```
+[devkorea-aks-2|default] gtrekter@MacBook-Pro-M4 azure % kubectl get pods,svc -n simple-app -o wide
+NAME                                           READY   STATUS    RESTARTS   AGE   IP            NODE                            NOMINATED NODE   READINESS GATES
+pod/curl                                       1/1     Running   0          33s   10.241.7.22   aks-linux-16720906-vmss000000   <none>           <none>
+pod/simple-app-57dc8d99d6-hrgsf                2/2     Running   0          23m   10.241.7.14   aks-linux-16720906-vmss000000   <none>           <none>
+pod/simple-app-v1-federated-6b699675c4-wpf75   2/2     Running   0          18m   10.241.7.17   aks-linux-16720906-vmss000000   <none>           <none>
+pod/simple-app-v1-gateway-57dc8d99d6-97gs7     2/2     Running   0          18m   10.241.9.11   aks-linux-16720906-vmss000001   <none>           <none>
+pod/simple-app-v1-mirrored-59c6f4ffb8-x2jqq    2/2     Running   0          18m   10.241.7.16   aks-linux-16720906-vmss000000   <none>           <none>
+
+NAME                                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE   SELECTOR
+service/simple-app                          ClusterIP   10.17.181.198   <none>        80/TCP    32m   app=simple-app,mode=federated,version=v1
+service/simple-app-v1-federated             ClusterIP   10.17.211.192   <none>        80/TCP    15m   app=simple-app,mode=federated,version=v1
+service/simple-app-v1-federated-federated   ClusterIP   10.17.173.9     <none>        80/TCP    15m   <none>
+service/simple-app-v1-gateway               ClusterIP   10.17.184.234   <none>        80/TCP    24m   app=simple-app,mode=gateway,version=v1
+service/simple-app-v1-mirrored              ClusterIP   10.17.16.137    <none>        80/TCP    24m   app=simple-app,mode=mirrored,version=v1
+```
+
+```
+kubectl exec -n simple-app curl -c curl -- curl -vvv 10.17.211.192:5678
+07:55:16.957498 [0-x] * [READ] client_reset, clear readers
+07:55:16.957651 [0-0] * [SETUP] added
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              007:55:16.958015 [0-0] *   Trying 10.17.211.192:5678...
+07:55:16.958204 [0-0] * [SETUP] Curl_conn_connect(block=0) -> 0, done=0
+07:55:17.959399 [0-0] * [SETUP] Curl_conn_connect(block=0) -> 0, done=0
+```
+
+
 ## Naver Cloud NKS (Optional)
 Creates a simple NKS cluster with VPC and subnets.
 ```sh
@@ -75,3 +121,5 @@ terraform apply
 ## Cleanup
 - Azure stack: `cd terraform/azure && terraform destroy -var-file=dev.tfvars`
 - Naver stack: `cd terraform/naver && terraform destroy`
+
+

@@ -198,7 +198,7 @@ resource "argocd_project" "linkerd_enterprise" {
       kind         = "allow"
       applications = ["*"]
       clusters     = ["*"]
-      namespaces   = ["linkerd", "linkerd-multicluster"]
+      namespaces   = ["linkerd", "linkerd-multicluster", "global"]
       duration     = "3600s"
       schedule     = "10 1 * * *"
       manual_sync  = true
