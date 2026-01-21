@@ -206,6 +206,55 @@ resource "argocd_project" "linkerd_enterprise" {
   }
 }
 
+resource "argocd_project" "simple_app" {
+  depends_on = [helm_release.argocd]
+
+  metadata {
+    name      = "simple-app"
+    namespace = "argocd"
+  }
+  spec {
+    description  = "Project for Simple Application deployments"
+    source_repos = [
+      "https://github.com/GTRekter/DevKorea-2026.git"
+    ]
+    destination {
+      server    = azurerm_kubernetes_cluster.kubernetes_clusters["devkorea-aks-1"].kube_config[0].host
+      name      = "devkorea-aks-1"
+      namespace = "simple-app"
+    }
+    destination {
+      server    = azurerm_kubernetes_cluster.kubernetes_clusters["devkorea-aks-2"].kube_config[0].host
+      name      = "devkorea-aks-2"
+      namespace = "simple-app"
+    }
+    cluster_resource_whitelist {
+      group = "*"
+      kind  = "*"
+    }
+    role {
+      name = "simple-app-admin"
+      policies = [
+        "p, proj:simple-app:simple-app-admin, applications, get, simple-app/*, allow",
+        "p, proj:simple-app:simple-app-admin, applications, sync, simple-app/*, allow",
+        "p, proj:simple-app:simple-app-admin, clusters, get, simple-app/*, allow",
+        "p, proj:simple-app:simple-app-admin, repositories, create, simple-app/*, allow",
+        "p, proj:simple-app:simple-app-admin, repositories, delete, simple-app/*, allow",
+        "p, proj:simple-app:simple-app-admin, repositories, update, simple-app/*, allow",
+      ]
+    }
+    sync_window {
+      kind         = "allow"
+      applications = ["*"]
+      clusters     = ["*"]
+      namespaces   = ["simple-app"]
+      duration     = "3600s"
+      schedule     = "10 1 * * *"
+      manual_sync  = true
+    }
+  }
+}
+
 # ============================================================
 # Linkerd License Namespace and Secret
 # ============================================================
@@ -482,7 +531,32 @@ resource "argocd_application" "linkerd_enterprise_multicluster_credentials" {
     source {
       repo_url        = "https://github.com/GTRekter/DevKorea-2026.git"
       target_revision = "HEAD"
-      path = "manifests/${each.value.source}"
+      path = "manifests/${each.value.source}/linkerd"
+      directory {
+        recurse = false
+      }
+    }
+  }
+}
+
+resource "argocd_application" "simple_application" {
+  for_each = local.other_clusters
+  depends_on = [helm_release.argocd, argocd_project.linkerd_enterprise, argocd_project.simple_app, argocd_application.linkerd_enterprise_multicluster]
+
+  metadata {
+    name      = "simple-app-${each.key}"
+    namespace = "argocd"
+  }
+  spec {
+    project = "simple-app"
+    destination {
+      server    = azurerm_kubernetes_cluster.kubernetes_clusters[each.key].kube_config[0].host
+      namespace = "simple-app"
+    }
+    source {
+      repo_url        = "https://github.com/GTRekter/DevKorea-2026.git"
+      target_revision = "HEAD"
+      path = "manifests/${each.key}/simple-app"
       directory {
         recurse = false
       }
