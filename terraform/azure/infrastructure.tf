@@ -3,7 +3,7 @@
 # ============================================================
 
 resource "azurerm_resource_group" "resource_group" {
-  name     = "${local.project_suffix}-rg"
+  name     = "${var.project_suffix}-rg"
   location = "Korea Central"
 }
 
@@ -12,16 +12,16 @@ resource "azurerm_resource_group" "resource_group" {
 # ============================================================
 
 resource "azurerm_virtual_network" "virtual_network" {
-  for_each = local.cluster_instances
+  for_each = var.cluster_instances
 
   name                = "${each.key}-vnet"
-  address_space       = [cidrsubnet(local.vnet_cidr_base, 8, each.value)]
+  address_space       = [cidrsubnet(var.vnet_cidr_base, 8, each.value)]
   location            = azurerm_resource_group.resource_group.location
   resource_group_name = azurerm_resource_group.resource_group.name
 }
 
 resource "azurerm_subnet" "subnets" {
-  for_each = local.cluster_instances
+  for_each = var.cluster_instances
 
   name                 = "${each.key}-subnet"
   resource_group_name  = azurerm_resource_group.resource_group.name
@@ -30,28 +30,11 @@ resource "azurerm_subnet" "subnets" {
 }
 
 # ============================================================
-# Virtual Network Peering
-# ============================================================
-
-resource "azurerm_virtual_network_peering" "vnet_peerings" {
-  for_each = { for pair in local.vnet_peering_pairs : "${pair.source}-to-${pair.target}" => pair }
-
-  name                         = "${local.project_suffix}-peer-${each.value.source}-to-${each.value.target}"
-  resource_group_name          = azurerm_resource_group.resource_group.name
-  virtual_network_name         = azurerm_virtual_network.virtual_network[each.value.source].name
-  remote_virtual_network_id    = azurerm_virtual_network.virtual_network[each.value.target].id
-  allow_virtual_network_access = true
-  allow_forwarded_traffic      = true
-  allow_gateway_transit        = false
-  use_remote_gateways          = false
-}
-
-# ============================================================
 # Kubernetes Resources
 # ============================================================
 
 resource "azurerm_kubernetes_cluster" "kubernetes_clusters" {
-  for_each = local.cluster_instances
+  for_each = var.cluster_instances
 
   name                = each.key
   location            = azurerm_resource_group.resource_group.location
@@ -84,17 +67,17 @@ resource "azurerm_kubernetes_cluster" "kubernetes_clusters" {
   }
   network_profile {
     network_plugin = "kubenet"
-    pod_cidr       = cidrsubnet(local.pod_cidr_base, 4, each.value)
-    service_cidr   = cidrsubnet(local.service_cidr_base, 4, each.value)
-    dns_service_ip = cidrhost(cidrsubnet(local.service_cidr_base, 4, each.value), 10)
+    pod_cidr       = cidrsubnet(var.pod_cidr_base, 4, each.value)
+    service_cidr   = cidrsubnet(var.service_cidr_base, 4, each.value)
+    dns_service_ip = cidrhost(cidrsubnet(var.service_cidr_base, 4, each.value), 10)
   }
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "linux_node_pool" {
-  for_each = azurerm_kubernetes_cluster.kubernetes_clusters
+  for_each = var.cluster_instances
 
   name                  = "linux"
-  kubernetes_cluster_id = each.value.id
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.kubernetes_clusters[each.key].id
   node_count            = 3
   vm_size               = "Standard_D4s_v3"
   os_type               = "Linux"

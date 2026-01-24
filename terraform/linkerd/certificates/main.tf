@@ -1,5 +1,5 @@
 # ============================================================
-# Root CA (Trust Anchor) and Issuer Certificates for Linkerd
+# Root CA (Trust Anchor) for Linkerd
 # ============================================================
 
 resource "tls_private_key" "trust_anchor" {
@@ -10,11 +10,13 @@ resource "tls_private_key" "trust_anchor" {
 resource "tls_self_signed_cert" "trust_anchor" {
   private_key_pem       = tls_private_key.trust_anchor.private_key_pem
   is_ca_certificate     = true
-  validity_period_hours = 87600 # ~10y
+  validity_period_hours = var.trust_anchor_validity_hours
+
   subject {
     common_name  = "identity.linkerd.cluster.local"
     organization = "linkerd"
   }
+
   allowed_uses = [
     "cert_signing",
     "crl_signing",
@@ -23,7 +25,7 @@ resource "tls_self_signed_cert" "trust_anchor" {
 }
 
 # ============================================================
-# Issuer Certificate for AKS Cluster 1
+# Issuer Certificate for Linkerd
 # ============================================================
 
 resource "tls_private_key" "issuer" {
@@ -33,10 +35,12 @@ resource "tls_private_key" "issuer" {
 
 resource "tls_cert_request" "issuer" {
   private_key_pem = tls_private_key.issuer.private_key_pem
+
   subject {
     common_name  = "identity.linkerd.cluster.local"
     organization = "linkerd"
   }
+
   dns_names = ["identity.linkerd.cluster.local"]
 }
 
@@ -45,7 +49,8 @@ resource "tls_locally_signed_cert" "issuer" {
   ca_private_key_pem    = tls_private_key.trust_anchor.private_key_pem
   ca_cert_pem           = tls_self_signed_cert.trust_anchor.cert_pem
   is_ca_certificate     = true
-  validity_period_hours = 8760 # ~1y
+  validity_period_hours = var.issuer_validity_hours
+
   allowed_uses = [
     "cert_signing",
     "crl_signing",

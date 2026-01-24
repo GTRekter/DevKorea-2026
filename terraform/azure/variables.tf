@@ -1,36 +1,27 @@
-variable "tenant_id" {
-  description = "The Tenant ID for the Azure subscription."
+# ============================================================
+# Project and Cluster Definitions
+# ============================================================
+
+variable "project_suffix" {
+  description = "Project name"
   type        = string
 }
 
-variable "subscription_id" {
-  description = "The Subscription ID for the Azure subscription."
+variable "cluster_instances" {
+  description = "AKS cluster instances"
+}
+
+variable "vnet_cidr_base" {
+  description = "Azure VNet CIDR base"
   type        = string
 }
 
-variable "client_id" {
-  description = "The Client ID for the Azure Service Principal."
+variable "pod_cidr_base" {
+  description = "Pod CIDR base for AKS clusters"
   type        = string
 }
 
-variable "client_secret" {
-  description = "The Client Secret for the Azure Service Principal."
+variable "service_cidr_base" {
+  description = "Service CIDR base for AKS clusters"
   type        = string
-  sensitive   = true
-}
-
-variable "linkerd_enterprise_license" {
-  type      = string
-  sensitive = true
-}
-
-variable "linkerd_enterprise_version" {
-  type    = string
-  default = "2.19.4"
-}
-
-variable "argocd_admin_password" {
-  description = "Argo CD admin password used by the provider when port-forwarding to the API server."
-  type        = string
-  sensitive   = true
 }

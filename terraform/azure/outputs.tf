@@ -1,5 +1,13 @@
-output "kube_config" {
-  description = "Raw kubeconfig per AKS cluster instance."
-  value       = { for key, cluster in azurerm_kubernetes_cluster.kubernetes_clusters : key => cluster.kube_config_raw }
-  sensitive   = true
+# ============================================================
+# Cluster Outputs
+# ============================================================
+
+output "cluster_names" {
+  description = "List of cluster names"
+  value       = keys(var.cluster_instances)
+}
+
+output "resource_group_name" {
+  description = "Resource group name"
+  value       = azurerm_resource_group.resource_group.name
 }
