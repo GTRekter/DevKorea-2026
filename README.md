@@ -2,6 +2,8 @@
 
 GitOps sample for Linkerd Enterprise + Argo CD across multiple clouds. The setup provisions three Kubernetes clusters: two Azure AKS clusters and one Naver Cloud NKS cluster, all managed by a single Argo CD instance.
 
+See the [presentation slides](assets/presentation.pdf) for an overview of the architecture and concepts.
+
 ## Repository Layout
 - `terraform/`: Root module that orchestrates both cloud providers, Linkerd certificates, and Argo CD setup.
 - `terraform/naver`: Provisions one NKS cluster with VPC/subnets (limited to one cluster due to NKS CIDR constraints).
