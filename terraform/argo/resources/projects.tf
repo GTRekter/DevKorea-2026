@@ -1,6 +1,35 @@
 # ============================================================
-# ArgoCD Project
+# ArgoCD Projects
 # ============================================================
+
+resource "argocd_project" "simple_app" {
+  metadata {
+    name      = "simple-app"
+    namespace = "argocd"
+  }
+
+  spec {
+    description = "Project for Simple App deployments"
+
+    source_repos = [
+      "https://github.com/GTRekter/DevKorea-2026.git",
+    ]
+
+    dynamic "destination" {
+      for_each = var.cluster_instances
+      content {
+        server    = var.kube_configs[destination.key].host
+        name      = destination.key
+        namespace = "simple-app"
+      }
+    }
+
+    cluster_resource_whitelist {
+      group = "*"
+      kind  = "*"
+    }
+  }
+}
 
 resource "argocd_project" "linkerd_enterprise" {
   metadata {

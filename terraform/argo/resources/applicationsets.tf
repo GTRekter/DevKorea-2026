@@ -7,6 +7,8 @@
 # ============================================================
 
 resource "argocd_application_set" "simple_app" {
+  depends_on = [argocd_project.simple_app]
+
   metadata {
     name      = "simple-app"
     namespace = "argocd"
@@ -23,7 +25,7 @@ resource "argocd_application_set" "simple_app" {
       }
 
       spec {
-        project = "default"
+        project = "simple-app"
 
         source {
           repo_url        = "https://github.com/GTRekter/DevKorea-2026.git"
@@ -37,10 +39,6 @@ resource "argocd_application_set" "simple_app" {
         }
 
         sync_policy {
-          automated {
-            prune     = true
-            self_heal = true
-          }
           sync_options = ["CreateNamespace=true"]
         }
       }

@@ -9,3 +9,5 @@
 # Ignore kubernetes config files
 **/kubeconfigs/
 
+# Ignore Keynote files
+**/*.key
