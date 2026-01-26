@@ -10,6 +10,10 @@ GitOps sample for Linkerd Enterprise + Argo CD across multiple clouds. The setup
 - `terraform/linkerd/`: Linkerd certificate generation and license management modules.
 - `manifests/`: Linkerd multicluster credentials/secrets and sample `simple-app` workloads for each cluster.
 
+## Architecture
+
+![Components deployed by Terraform](assets/components.png)
+
 ## What It Creates
 - **One NKS cluster** (`devkorea-nks-1`) on Naver Cloud with dedicated VPC/subnet.
 - **Two AKS clusters** (`devkorea-aks-1`, `devkorea-aks-2`) on Azure with VNets and peering.
