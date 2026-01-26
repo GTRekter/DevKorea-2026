@@ -4,7 +4,7 @@
 
 resource "argocd_application" "linkerd_enterprise_multicluster" {
   for_each   = var.cluster_instances
-  depends_on = [argocd_project.linkerd_enterprise, argocd_application_set.linkerd_enterprise_control_plane]
+  depends_on = [argocd_project.linkerd_enterprise, argocd_application_set.linkerd_enterprise_control_plane, argocd_cluster.clusters]
 
   metadata {
     name      = "linkerd-enterprise-multicluster-${each.key}"

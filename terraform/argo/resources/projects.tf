@@ -11,6 +11,10 @@ resource "argocd_project" "linkerd_enterprise" {
   spec {
     description = "Project for Linkerd Enterprise deployments"
 
+    orphaned_resources {
+      warn = true
+    }
+
     source_repos = [
       "https://helm.buoyant.cloud",
       "https://github.com/GTRekter/DevKorea-2026.git",

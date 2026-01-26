@@ -5,11 +5,14 @@ locals {
 
   project_suffix = "devkorea"
   aks_cluster_instances = {
-    # "${local.project_suffix}-aks-1" = 0 --- IGNORE UNTIL THE SUB IS REACTIVATED ---
+    "${local.project_suffix}-aks-1" = 0 
+    "${local.project_suffix}-aks-2" = 1 
   }
   nks_cluster_instances = {
     "${local.project_suffix}-nks-1" = 0
-    "${local.project_suffix}-nks-2" = 1
+    # NKS have a big limitation on the configurable CIDR ranges,
+    # so we can only deploy one NKS cluster in this example.
+    # "${local.project_suffix}-nks-2" = 1
   }
 
   # ============================================================

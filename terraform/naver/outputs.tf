@@ -25,3 +25,17 @@ output "kube_configs" {
   }
   sensitive = true
 }
+
+output "load_balancer_ids" {
+  description = "Load balancer IDs for each cluster"
+  value = {
+    for k, v in ncloud_lb.linkerd_gateway : k => v.id
+  }
+}
+
+output "load_balancer_ips" {
+  description = "Load balancer public IPs for each cluster"
+  value = {
+    for k, v in ncloud_lb.linkerd_gateway : k => v.ip_list
+  }
+}

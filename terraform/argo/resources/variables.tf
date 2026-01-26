@@ -12,7 +12,7 @@ variable "kube_configs" {
   type = map(object({
     host                   = string
     cluster_ca_certificate = string
-    id                     = string
+    id                     = optional(string)
   }))
   sensitive = true
 }

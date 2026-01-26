@@ -25,12 +25,22 @@ resource "helm_release" "argocd" {
 }
 
 # ============================================================
+# Wait for ArgoCD to be fully ready
+# ============================================================
+
+resource "time_sleep" "wait_for_argocd" {
+  depends_on = [helm_release.argocd]
+
+  create_duration = "60s"
+}
+
+# ============================================================
 # ArgoCD Server Service Data Source
 # Collects LoadBalancer IP after helm release is deployed
 # ============================================================
 
 data "kubernetes_service_v1" "argocd_server" {
-  depends_on = [helm_release.argocd]
+  depends_on = [time_sleep.wait_for_argocd]
 
   metadata {
     name      = "argocd-server"

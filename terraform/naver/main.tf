@@ -80,6 +80,47 @@ resource "ncloud_route" "default_private_to_natgw" {
 }
 
 # ============================================================
+# Load Balancer for Linkerd Gateway
+# ============================================================
+
+resource "ncloud_lb" "linkerd_gateway" {
+  for_each = var.cluster_instances
+
+  name           = "${var.project_suffix}-linkerd-gw-${each.value}"
+  type           = "NETWORK"
+  network_type   = "PUBLIC"
+  subnet_no_list = [ncloud_subnet.lb_public[each.key].id]
+}
+
+resource "ncloud_lb_target_group" "linkerd_gateway" {
+  for_each = var.cluster_instances
+
+  name        = "${var.project_suffix}-linkerd-tg-${each.value}"
+  vpc_no      = ncloud_vpc.vpc[each.key].id
+  protocol    = "TCP"
+  target_type = "VSVR"
+  port        = 4143
+
+  health_check {
+    protocol       = "TCP"
+    port           = 4143
+    cycle          = 30
+    up_threshold   = 2
+    down_threshold = 2
+  }
+}
+
+resource "ncloud_lb_listener" "linkerd_gateway" {
+  for_each = var.cluster_instances
+
+  load_balancer_no = ncloud_lb.linkerd_gateway[each.key].id
+  protocol         = "TCP"
+  port             = 4143
+  target_group_no  = ncloud_lb_target_group.linkerd_gateway[each.key].id
+}
+
+
+# ============================================================
 # VPC Peering
 # ============================================================
 
@@ -95,10 +136,15 @@ resource "ncloud_vpc_peering" "peerings" {
 # NKS (cluster per VPC)
 # ============================================================
 
+resource "random_integer" "login_key_suffix" {
+  min = 1
+  max = 50000
+}
+
 resource "ncloud_login_key" "login_key" {
   for_each = var.cluster_instances
 
-  key_name = "${each.key}-login-key-${each.value}"
+  key_name = "${each.key}-login-key-${random_integer.login_key_suffix.result}"
 }
 
 resource "ncloud_nks_cluster" "clusters" {

@@ -59,24 +59,32 @@ provider "kubernetes" {
   }
 }
 
+# provider "kubernetes" {
+#   alias                  = "devkorea_nks_2"
+#   host                   = module.naver_infrastructure.kube_configs["devkorea-nks-2"].host
+#   cluster_ca_certificate = base64decode(module.naver_infrastructure.kube_configs["devkorea-nks-2"].cluster_ca_certificate)
+#   exec {
+#     api_version = "client.authentication.k8s.io/v1beta1"
+#     command     = "ncp-iam-authenticator"
+#     args        = ["token", "--clusterUuid", module.naver_infrastructure.kube_configs["devkorea-nks-2"].id, "--region", "KR"]
+#   }
+# }
+
 provider "kubernetes" {
-  alias                  = "devkorea_nks_2"
-  host                   = module.naver_infrastructure.kube_configs["devkorea-nks-2"].host
-  cluster_ca_certificate = base64decode(module.naver_infrastructure.kube_configs["devkorea-nks-2"].cluster_ca_certificate)
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    command     = "ncp-iam-authenticator"
-    args        = ["token", "--clusterUuid", module.naver_infrastructure.kube_configs["devkorea-nks-2"].id, "--region", "KR"]
-  }
+  alias                  = "devkorea_aks_1"
+  host                   = module.azure_infrastructure.kube_configs["devkorea-aks-1"].host
+  client_certificate     = base64decode(module.azure_infrastructure.kube_configs["devkorea-aks-1"].client_certificate)
+  client_key             = base64decode(module.azure_infrastructure.kube_configs["devkorea-aks-1"].client_key)
+  cluster_ca_certificate = base64decode(module.azure_infrastructure.kube_configs["devkorea-aks-1"].cluster_ca_certificate)
 }
 
-# provider "kubernetes" {
-#   alias                  = "devkorea_aks_1"
-#   host                   = azurerm_kubernetes_cluster.kubernetes_clusters["devkorea-aks-1"].kube_config[0].host
-#   client_certificate     = base64decode(azurerm_kubernetes_cluster.kubernetes_clusters["devkorea-aks-1"].kube_config[0].client_certificate)
-#   client_key             = base64decode(azurerm_kubernetes_cluster.kubernetes_clusters["devkorea-aks-1"].kube_config[0].client_key)
-#   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.kubernetes_clusters["devkorea-aks-1"].kube_config[0].cluster_ca_certificate)
-# }
+provider "kubernetes" {
+  alias                  = "devkorea_aks_2"
+  host                   = module.azure_infrastructure.kube_configs["devkorea-aks-2"].host
+  client_certificate     = base64decode(module.azure_infrastructure.kube_configs["devkorea-aks-2"].client_certificate)
+  client_key             = base64decode(module.azure_infrastructure.kube_configs["devkorea-aks-2"].client_key)
+  cluster_ca_certificate = base64decode(module.azure_infrastructure.kube_configs["devkorea-aks-2"].cluster_ca_certificate)
+}
 
 provider "helm" {
   kubernetes = {
